@@ -1,0 +1,23 @@
+---
+- name: Instalar Repositório Zabbix
+  apt_repository:
+    repo: deb https://repo.zabbix.com/zabbix/6.4/ubuntu jammy main
+    state: present
+
+- name: Instalar Zabbix Agent 2
+  apt:
+    name: zabbix-agent2
+    state: present
+
+- name: Configurar Zabbix Agent
+  template:
+    src: zabbix_agent2.conf.j2
+    dest: /etc/zabbix/zabbix_agent2.conf
+  notify: Reiniciar Zabbix Agent
+
+# Instalação de Scripts Personalizados para Insights
+- name: Copiar Script de Monitoramento Mongo
+  copy:
+    src: mongo_monitor.py
+    dest: /usr/local/bin/mongo_monitor.py
+    mode: '0755'

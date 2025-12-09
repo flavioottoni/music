@@ -1,0 +1,45 @@
+---
+- name: Adicionar chave GPG do RabbitMQ
+  apt_key:
+    url: "https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc"
+    state: present
+
+- name: Instalar RabbitMQ Server
+  apt:
+    name: rabbitmq-server
+    state: present
+    update_cache: yes
+
+- name: Parar serviço RabbitMQ para configuração
+  service:
+    name: rabbitmq-server
+    state: stopped
+
+- name: Configurar Erlang Cookie (Idêntico em todos os nós)
+  copy:
+    content: "SECRET_SOUNDWAVE_ERLANG_COOKIE_HASH"
+    dest: /var/lib/rabbitmq/.erlang.cookie
+    owner: rabbitmq
+    group: rabbitmq
+    mode: '0400'
+
+- name: Iniciar serviço RabbitMQ
+  service:
+    name: rabbitmq-server
+    state: started
+
+- name: Habilitar Plugin de Gerenciamento
+  rabbitmq_plugin:
+    names: rabbitmq_management
+    state: enabled
+
+- name: Criar Usuário Admin
+  rabbitmq_user:
+    user: soundwave_admin
+    password: "{{ rabbitmq_password_vault }}"
+    tags: administrator
+    vhost: /
+    configure_priv:.*
+    write_priv:.*
+    read_priv:.*
+    state: present

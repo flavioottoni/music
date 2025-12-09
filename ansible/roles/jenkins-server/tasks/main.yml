@@ -1,0 +1,40 @@
+---
+- name: Instalar Dependências (Java, Git)
+  yum:
+    name:
+      - java-11-openjdk-devel
+      - git
+      - python3-pip
+    state: present
+
+- name: Adicionar Repositório Jenkins
+  get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+
+- name: Importar Chave GPG Jenkins
+  rpm_key:
+    state: present
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+- name: Instalar Jenkins
+  yum:
+    name: jenkins
+    state: present
+
+- name: Iniciar Jenkins
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Instalar Docker (para Agents)
+  yum:
+    name: docker
+    state: present
+
+- name: Adicionar usuário Jenkins ao grupo Docker
+  user:
+    name: jenkins
+    groups: docker
+    append: yes
